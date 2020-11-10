@@ -11,6 +11,7 @@ ss_quantity= pa.field('ss_quantity', pa.int32(), nullable=False)
 ss_sales_price=pa.field('ss_sales_price', pa.float64(), nullable=False)
 ss_net_profit=pa.field('ss_net_profit', pa.float64(), nullable=False)
 
+
 #Customer demographics table
 cd=[0,2,3]
 cd_type = ['int32','string', 'string']
@@ -25,9 +26,9 @@ d_date_sk=pa.field('d_date_sk',pa.int32(), nullable=False)
 d_year=pa.field('d_year', pa.int32(),nullable=False)
 
 #Store Fact table
-#s=[0]
-#s_type=['int32']
-#s_store_sk=pa.field('s_store_sk', pa.int32(), nullable=False)
+s=[0]
+s_type=['int32']
+s_store_sk=pa.field('s_store_sk', pa.int32(), nullable=False)
 
 #Customer address table
 ca=[0,8,10]
@@ -38,29 +39,21 @@ ca_country=pa.field('ca_country', pa.utf8(), nullable=False)
 
 field_metadata = {b'fletcher_epc' : b'20'}
 
-#ss_sold_date_sk=ss_sold_date_sk.add_metadata(field_metadata)
-#ss_cdemo_sk=ss_cdemo_sk.add_metadata(field_metadata)
-#ss_addr_sk=ss_addr_sk.add_metadata(field_metadata)
-#ss_store_sk=ss_store_sk.add_metadata(field_metadata)
-#ss_quantity=ss_quantity.add_metadata(field_metadata)
-#ss_sales_price=ss_sales_price.add_metadata(field_metadata)
-#ss_net_profit=ss_net_profit.add_metadata(field_metadata)
 
-#cd_demo_sk=cd_demo_sk.add_metadata(field_metadata)
 cd_marital_status=cd_marital_status.add_metadata(field_metadata)
 cd_education_status=cd_education_status.add_metadata(field_metadata)
 
-#d_year=d_year.add_metadata(field_metadata)
-#d_date_sk=d_date_sk.add_metadata(field_metadata)
-
-#s_store_sk=s_store_sk.add_metadata(field_metadata)
-
-#ca_address_sk=ca_address_sk.add_metadata(field_metadata)
 ca_country=ca_country.add_metadata(field_metadata)
 ca_state=ca_state.add_metadata(field_metadata)
 
 # Create a list of fields for pa.schema()
-schema_fields = [ss_sold_date_sk, ss_cdemo_sk,ss_addr_sk, ss_store_sk,ss_quantity, ss_sales_price, ss_net_profit,cd_demo_sk,cd_marital_status,cd_education_status,d_year, d_date_sk, ca_address_sk, ca_country, ca_state]
+ss_table = pa.field('store_sales',pa.list_([ss_sold_date_sk, ss_cdemo_sk,ss_addr_sk, ss_store_sk,ss_quantity, ss_sales_price, ss_net_profit]), nullable=False)
+s_table = pa.field('store',pa.list_([s_store_sk]), nullable=False)
+dt_table = pa.field('date_dim',pa.list_([d_year, d_date_sk]), nullable=False)
+ca_table = pa.field('customer_address',pa.list_([ca_address_sk, ca_country, ca_state]), nullable=False)
+cd_table = pa.field('customer_demographics',pa.list_([cd_demo_sk,cd_marital_status,cd_education_status]), nullable=False)
+
+schema_fields = [ss_table, ss_quantity, s_table, dt_table, ca_table, cd_table]
 
 # Create a new schema from the fields.
 schema = pa.schema(schema_fields)
@@ -118,8 +111,6 @@ for i in file_list:
         column_counter+=1
         data.append(pa.array(column_fields))
     file_counter+=1
-print(data)
-print(len(data))
 # Create a RecordBatch from the Arrays.
 recordbatch = pa.RecordBatch.from_arrays(data, schema)
 
