@@ -3,17 +3,13 @@
 all:
 	python3 generate-input.py
 	fletchgen -n SFilter -r recordbatch.rb -s memory.srec -l vhdl --sim --axi
-generate-old:
-	python3 generate-input_v_0.py
-interface-old:
-	fletchgen -n SFilter -r recordbatch.rb -s memory.srec -l vhdl --sim --axi
-generate-new:
+generate:
 	python3 generate-input.py
-interface-new:
+interface:
 	fletchgen -n SFilter -r recordbatch.rb -s memory.srec -l vhdl --sim --axi
 clean:
 	# input files
-	rm -f recordbatch.rb
+	rm -f *.rb
 	# vhdmmio stuff	
 	rm -rf vhdmmio-doc
 	rm -f fletchgen.mmio.yaml
