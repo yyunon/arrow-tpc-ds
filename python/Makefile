@@ -3,9 +3,13 @@
 all:
 	python3 generate-input.py
 	fletchgen -n SFilter -r recordbatch.rb -s memory.srec -l vhdl --sim --axi
-generate:
+generate-old:
+	python3 generate-input_v_0.py
+interface-old:
+	fletchgen -n SFilter -r recordbatch.rb -s memory.srec -l vhdl --sim --axi
+generate-new:
 	python3 generate-input.py
-interface:
+interface-new:
 	fletchgen -n SFilter -r recordbatch.rb -s memory.srec -l vhdl --sim --axi
 clean:
 	# input files
