@@ -30,7 +30,9 @@ class dataset:
         self.dir_name = self.prefix + self.timestamp
         if not os.path.isdir(self.dir_name):
             os.mkdir(self.dir_name)
-        os.environ['TIME_PREFIX'] = self.timestamp
+        #Create env var. to be read by fletchgen
+        with open("./.env", "w") as f:
+            f.write('export TIME_PREFIX="'+str(self.timestamp) + '"')
 
     @property
     def options(self):
