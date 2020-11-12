@@ -30,6 +30,7 @@ class dataset:
         self.dir_name = self.prefix + self.timestamp
         if not os.path.isdir(self.dir_name):
             os.mkdir(self.dir_name)
+        os.environ['TIME_PREFIX'] = self.timestamp
 
     @property
     def options(self):
@@ -38,23 +39,6 @@ class dataset:
     @options.setter
     def options(self, d='|'):
         self.opt.delimiter = d
-
-    def stream_to_file(self):
-        print(f"Streaming to file {self.recordbatch_name}.....")
-        self.recordbatch = pa.RecordBatch.from_arrays(self.data, schema=self.schema)
-
-        # Create an Arrow RecordBatchFileWriter.
-        self.writer = pa.RecordBatchFileWriter(self.dir_name + "/" + self.recordbatch_name, self.schema)
-
-        # Write the RecordBatch.
-        self.writer.write(self.recordbatch)
-
-        # Close the writer.
-        self.writer.close()
-
-    def print_col(self,column):
-        assert(self.data != None)
-        print(f"Column: {column}, Row:{self.data[column]} ")
 
 class store_sales(dataset):
 
@@ -101,6 +85,23 @@ class store_sales(dataset):
                     self.data.append(pa.array(self.table.column(i).to_pylist()))
         self.print_col(0)
 
+    def stream_to_file(self):
+        print(f"Streaming to file {self.recordbatch_name}.....")
+        self.recordbatch = pa.RecordBatch.from_arrays(self.data, schema=self.schema)
+
+        # Create an Arrow RecordBatchFileWriter.
+        self.writer = pa.RecordBatchFileWriter(self.dir_name + "/" + self.recordbatch_name, self.schema)
+
+        # Write the RecordBatch.
+        self.writer.write(self.recordbatch)
+
+        # Close the writer.
+        self.writer.close()
+
+    def print_col(self,column):
+        assert(self.data != None)
+        print(f"Column: {column}, Row:{self.data[column]} ")
+
 
 class date_dim(dataset):
 
@@ -138,6 +139,23 @@ class date_dim(dataset):
                 if i in columns: 
                     self.data.append(pa.array(self.table.column(i).to_pylist()))
         self.print_col(0)
+
+    def stream_to_file(self):
+        print(f"Streaming to file {self.recordbatch_name}.....")
+        self.recordbatch = pa.RecordBatch.from_arrays(self.data, schema=self.schema)
+
+        # Create an Arrow RecordBatchFileWriter.
+        self.writer = pa.RecordBatchFileWriter(self.dir_name + "/" + self.recordbatch_name, self.schema)
+
+        # Write the RecordBatch.
+        self.writer.write(self.recordbatch)
+
+        # Close the writer.
+        self.writer.close()
+
+    def print_col(self,column):
+        assert(self.data != None)
+        print(f"Column: {column}, Row:{self.data[column]} ")
 
 class customer_address(dataset):
 
@@ -177,6 +195,23 @@ class customer_address(dataset):
                 if i in columns: 
                     self.data.append(pa.array(self.table.column(i).to_pylist()))
         self.print_col(0)
+
+    def stream_to_file(self):
+        print(f"Streaming to file {self.recordbatch_name}.....")
+        self.recordbatch = pa.RecordBatch.from_arrays(self.data, schema=self.schema)
+
+        # Create an Arrow RecordBatchFileWriter.
+        self.writer = pa.RecordBatchFileWriter(self.dir_name + "/" + self.recordbatch_name, self.schema)
+
+        # Write the RecordBatch.
+        self.writer.write(self.recordbatch)
+
+        # Close the writer.
+        self.writer.close()
+
+    def print_col(self,column):
+        assert(self.data != None)
+        print(f"Column: {column}, Row:{self.data[column]} ")
 
 
 class customer_demographics(dataset):
@@ -219,6 +254,23 @@ class customer_demographics(dataset):
                     self.data.append(pa.array(self.table.column(i).to_pylist()))
         self.print_col(0)
 
+    def stream_to_file(self):
+        print(f"Streaming to file {self.recordbatch_name}.....")
+        self.recordbatch = pa.RecordBatch.from_arrays(self.data, schema=self.schema)
+
+        # Create an Arrow RecordBatchFileWriter.
+        self.writer = pa.RecordBatchFileWriter(self.dir_name + "/" + self.recordbatch_name, self.schema)
+
+        # Write the RecordBatch.
+        self.writer.write(self.recordbatch)
+
+        # Close the writer.
+        self.writer.close()
+
+    def print_col(self,column):
+        assert(self.data != None)
+        print(f"Column: {column}, Row:{self.data[column]} ")
+
 class store(dataset):
 
     def __init__(self, columns=None, c_prefix=None, metadata_information=None,field_metadata=None,metadata_indexes=None):
@@ -251,4 +303,21 @@ class store(dataset):
                 if i in columns: 
                     self.data.append(pa.array(self.table.column(i).to_pylist()))
         self.print_col(0)
+
+    def stream_to_file(self):
+        print(f"Streaming to file {self.recordbatch_name}.....")
+        self.recordbatch = pa.RecordBatch.from_arrays(self.data, schema=self.schema)
+
+        # Create an Arrow RecordBatchFileWriter.
+        self.writer = pa.RecordBatchFileWriter(self.dir_name + "/" + self.recordbatch_name, self.schema)
+
+        # Write the RecordBatch.
+        self.writer.write(self.recordbatch)
+
+        # Close the writer.
+        self.writer.close()
+
+    def print_col(self,column):
+        assert(self.data != None)
+        print(f"Column: {column}, Row:{self.data[column]} ")
 
