@@ -28,8 +28,8 @@ cd_education_status=pa.field('cd_education_status', pa.utf8(), nullable= False)
 #Date dim table - RB
 dt=[0,6]
 dt_type=['int64','int64']
-d_date_sk=pa.field('d_date_sk',pa.int64(), nullable=False)
-d_year=pa.field('d_year', pa.int64(),nullable=False)
+d_date_sk=pa.field('d_date_sk',pa.int64(), nullable=false)
+d_year=pa.field('d_year', pa.int64(),nullable=false)
 
 #Store Fact table - RB
 s=[0]
