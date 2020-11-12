@@ -14,6 +14,7 @@ class dataset:
         self.schema=None
         self.recordbatch=None
         self.writer=None
+        self.metadata_information=None
         self.metadata = metadata_information
         self.opt = csv.ParseOptions()
         if c_prefix == None:
@@ -57,6 +58,7 @@ class store_sales(dataset):
         self.ss_sales_price=pa.field('sales_price', pa.float64(), nullable=False)
         self.ss_net_profit=pa.field('net_profit', pa.float64(), nullable=False)
         # Configure schema
+        self.metadata_information=metadata_information
         #TODO : make this general
         self.schema = pa.schema([self.ss_sold_date_sk, 
                                  self.ss_cdemo_sk,
@@ -64,8 +66,8 @@ class store_sales(dataset):
                                  self.ss_store_sk,
                                  self.ss_quantity, 
                                  self.ss_sales_price, 
-                                 self.ss_net_profit])
-        self.schema.add_metadata(metadata_information)
+                                 self.ss_net_profit],metadata=self.metadata_information)
+        #self.schema.add_metadata(self.metadata_information)
         # Field metadata such as epc, not always applicable
         self.field_metadata = field_metadata
         # output file names
@@ -118,11 +120,12 @@ class date_dim(dataset):
         self.d_date_sk=pa.field('date_sk',pa.int64(), nullable=False)
         self.d_year=pa.field('year', pa.int64(),nullable=False)
 
+        self.metadata_information=metadata_information
         # Configure schema
         #TODO : make this general
         self.schema = pa.schema([self.d_date_sk,
-                                 self.d_year])
-        self.schema.add_metadata(metadata_information)
+                                 self.d_year],metadata=self.metadata_information)
+        #self.schema.add_metadata(self.metadata_information)
         # Field metadata such as epc, not always applicable
         self.field_metadata = field_metadata
         # output file names
@@ -170,12 +173,13 @@ class customer_address(dataset):
         self.ca_address_sk=pa.field('address_sk', pa.int64(), nullable=False)
         self.ca_state=pa.field('state', pa.utf8(), nullable=False)
         self.ca_country=pa.field('country', pa.utf8(), nullable=False)
+        self.metadata_information=metadata_information
         # Configure schema
         #TODO : make this general
         self.schema = pa.schema([self.ca_address_sk,
                                  self.ca_state,
-                                 self.ca_country])
-        self.schema.add_metadata(metadata_information)
+                                 self.ca_country],metadata=self.metadata_information)
+        #self.schema.add_metadata(metadata_information)
         self.ca_country=self.ca_country.add_metadata(self.field_metadata)
         self.ca_state=self.ca_state.add_metadata(self.field_metadata)
         # Field metadata such as epc, not always applicable
@@ -228,14 +232,15 @@ class customer_demographics(dataset):
         self.cd_demo_sk=pa.field('demo_sk', pa.int64(), nullable=False)
         self.cd_marital_status=pa.field('marital_status', pa.utf8(),nullable=False)
         self.cd_education_status=pa.field('education_status', pa.utf8(), nullable= False)
+        self.metadata_information=metadata_information
         # Configure schema
         #TODO : make this general
         self.schema = pa.schema([self.cd_demo_sk,
                                  self.cd_marital_status,
-                                 self.cd_education_status])
+                                 self.cd_education_status],metadata=self.metadata_information)
         self.cd_marital_status=self.cd_marital_status.add_metadata(self.field_metadata)
         self.cd_education_status=self.cd_education_status.add_metadata(self.field_metadata)
-        self.schema.add_metadata(metadata_information)
+        #self.schema.add_metadata(metadata_information)
         # Field metadata such as epc, not always applicable
         # output file names
         self.recordbatch_name="cd_recordbatch.rb"
@@ -282,9 +287,10 @@ class store(dataset):
         self.type = ['int64']
         self.s_store_sk=pa.field('store_sk', pa.int64(), nullable=False)
         # configure schema
+        self.metadata_information=metadata_information
         #todo : make this general
-        self.schema = pa.schema([self.s_store_sk])
-        self.schema.add_metadata(metadata_information)
+        self.schema = pa.schema([self.s_store_sk],metadata=self.metadata_information)
+        #self.schema.add_metadata()
         # field metadata such as epc, not always applicable
         self.field_metadata = field_metadata
         # output file names
