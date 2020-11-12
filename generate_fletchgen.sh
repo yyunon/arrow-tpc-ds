@@ -9,4 +9,5 @@ fletchgen -n Join -r $DATASET_DIR/$TIME_PREFIX/ss_recordbatch.rb $DATASET_DIR/$T
           -s tpc.srec \
           -t tpc_out.srec \
           -l vhdl \
-          --sim
+          --sim \
+          --axi
