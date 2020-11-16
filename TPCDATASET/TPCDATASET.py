@@ -46,28 +46,65 @@ class dataset:
 
 class store_sales(dataset):
 
-    def __init__(self, columns=None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None):
+    def __init__(self, columns=None, row_size = None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None):
         if metadata_information == None or metadata_indexes==None:
             assert(False)
         super().__init__(c_prefix, metadata_information)
-        self.type = ['int64','int64','int64','int64','int64','float64','float64']
-        self.ss_sold_date_sk = pa.field('sold_date_sk', pa.int64(), nullable=False)
-        self.ss_cdemo_sk= pa.field('cdemo_sk', pa.int64(), nullable=False)
-        self.ss_addr_sk= pa.field('addr_sk', pa.int64(), nullable=False)
-        self.ss_store_sk= pa.field('store_sk', pa.int64(), nullable=False)
-        self.ss_quantity= pa.field('quantity', pa.int64(), nullable=False)
-        self.ss_sales_price=pa.field('sales_price', pa.float64(), nullable=False)
-        self.ss_net_profit=pa.field('net_profit', pa.float64(), nullable=False)
-        # Configure schema
+        self.ss_columns_index = [
+            'ss_sold_date_sk',
+            'ss_sold_time_sk',     
+            'ss_sold_item_sk',    
+            'ss_sold_customer_sk',
+            'ss_cdemo_sk',
+            'ss_hdemo_sk',
+            'ss_addr_sk',
+            'ss_store_sk',
+            'ss_promo_sk',
+            'ss_ticket_number',
+            'ss_quantity',
+            'ss_wholesale_cost',
+            'ss_list_price',
+            'ss_sales_price',
+            'ss_ext_discount_amt',
+            'ss_ext_sales_price',
+            'ss_ext_wholesale_cost',
+            'ss_ext_list_price',
+            'ss_ext_tax',
+            'ss_coupon_amt',
+            'ss_net_paid',
+            'ss_net_paid_inc_tax',
+            'ss_net_profit'
+        ]
+        self.ss_columns = {
+            'ss_sold_date_sk'       : pa.field('sold_date_sk', pa.int64(), nullable=False),
+            'ss_sold_time_sk'       : pa.field('sold_time_sk', pa.int64(), nullable=False),
+            'ss_sold_item_sk'       : pa.field('sold_item_sk', pa.int64(), nullable=False),
+            'ss_sold_customer_sk'   : pa.field('sold_customer_sk', pa.int64(), nullable=False),
+            'ss_cdemo_sk'           : pa.field('cdemo_sk', pa.int64(), nullable=False),
+            'ss_hdemo_sk'           : pa.field('hdemo_sk', pa.int64(), nullable=False),
+            'ss_addr_sk'            : pa.field('addr_sk', pa.int64(), nullable=False),
+            'ss_store_sk'           : pa.field('store_sk', pa.int64(), nullable=False),
+            'ss_promo_sk'           : pa.field('promo_sk', pa.int64(), nullable=False),
+            'ss_ticket_number'      : pa.field('ticket_number', pa.int64(), nullable=False),
+            'ss_quantity'           : pa.field('quantity', pa.int64(), nullable=False),
+            'ss_wholesale_cost'     : pa.field('wholesale_cost', pa.float64(), nullable=False),
+            'ss_list_price'         : pa.field('list_price', pa.float64(), nullable=False),
+            'ss_sales_price'        : pa.field('sales_price', pa.float64(), nullable=False),
+            'ss_ext_discount_amt'   : pa.field('ext_discount_amt', pa.float64(), nullable=False),
+            'ss_ext_sales_price'    : pa.field('ext_sales_price', pa.float64(), nullable=False),
+            'ss_ext_wholesale_cost' : pa.field('ext_wholesale_cost', pa.float64(), nullable=False),
+            'ss_ext_list_price'     : pa.field('ext_list_price', pa.float64(), nullable=False),
+            'ss_ext_tax'            : pa.field('ext_tax', pa.float64(), nullable=False),
+            'ss_coupon_amt'         : pa.field('coupon_amt', pa.float64(), nullable=False),
+            'ss_net_paid'           : pa.field('net_paid', pa.float64(), nullable=False),
+            'ss_net_paid_inc_tax'   : pa.field('net_paid_inc_tax', pa.float64(), nullable=False),
+            'ss_net_profit'         : pa.field('net_profit', pa.float64(), nullable=False)
+        }
         self.metadata_information=metadata_information
-        #TODO : make this general
-        self.schema = pa.schema([self.ss_sold_date_sk, 
-                                 self.ss_cdemo_sk,
-                                 self.ss_addr_sk, 
-                                 self.ss_store_sk,
-                                 self.ss_quantity, 
-                                 self.ss_sales_price, 
-                                 self.ss_net_profit],metadata=self.metadata_information)
+        self.schema_vars = []
+        for i in columns:
+            self.schema_vars.append(self.ss_columns_index[i])
+        self.schema = pa.schema(self.schema_vars,metadata=self.metadata_information)
         #self.schema.add_metadata(self.metadata_information)
         # Field metadata such as epc, not always applicable
         self.field_metadata = field_metadata
@@ -84,11 +121,11 @@ class store_sales(dataset):
         else: 
             print(f"Reading some columns : {columns}")
             self.table = csv.read_csv(self.prefix + self.database_name,parse_options=self.opt)
-            print(f"Size of table is: {len(self.table)}")
+            print(f"Size of read table is: {len(self.table)} rows. You have selected to stream {row_size} number of rows.")
             for i,_ in enumerate(self.table):
                 if i in columns: 
-                    self.data.append(pa.array(self.table.column(i).to_pylist()))
-        self.print_col(0)
+                    temp_read = self.table.column(i).to_pylist()
+                    self.data.append(pa.array(temp_read[0:row_size]))
 
     def stream_to_file(self):
         print(f"Streaming to file {self.recordbatch_name}.....")
