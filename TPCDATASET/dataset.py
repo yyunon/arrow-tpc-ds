@@ -6,6 +6,7 @@ from pyarrow import csv
  
 class dataset:
     def __init__(self, c_prefix=None, metadata_information=None):
+        #TODO Add many of the vars and logic in datasets to here
         self.database_name=None
         self.prefix= None
         self.recordbatch_name=None
@@ -54,9 +55,11 @@ class dataset:
 class store_sales(dataset):
 
     def __init__(self, columns=None, row_size = None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None):
-        if metadata_information == None or metadata_indexes==None:
+        if metadata_information == None:
             assert(False)
         super().__init__(c_prefix, metadata_information)
+        self.field_metadata = field_metadata
+        self.metadata_information=metadata_information
         self.ss_columns_index = [
             'ss_sold_date_sk',
             'ss_sold_time_sk',     
@@ -107,14 +110,17 @@ class store_sales(dataset):
             'ss_net_paid_inc_tax'   : pa.field('net_paid_inc_tax', pa.float64(), nullable=False),
             'ss_net_profit'         : pa.field('net_profit', pa.float64(), nullable=False)
         }
-        self.metadata_information=metadata_information
+        if metadata_indexes != None:
+            print(f"Adding field metadata to indexes: ")
+            for i in metadata_indexes:
+                print(f"{self.ss_columns_index[i]}")
+                self.ss_columns[self.ss_columns_index[i]] = self.ss_columns[self.ss_columns_index[i]].add_metadata(self.field_metadata)
         self.schema_vars = []
         for i in columns:
             self.schema_vars.append(self.ss_columns[self.ss_columns_index[i]])
         self.schema = pa.schema(self.schema_vars,metadata=self.metadata_information)
         #self.schema.add_metadata(self.metadata_information)
         # Field metadata such as epc, not always applicable
-        self.field_metadata = field_metadata
         # output file names
         self.recordbatch_name="ss_recordbatch.rb"
         self.database_name = "dataset/store_sales_backup.dat"
@@ -131,6 +137,8 @@ class store_sales(dataset):
             print(f"Size of read table is: {len(self.table)} rows. You have selected to stream {row_size} number of rows.")
             for i,_ in enumerate(self.table):
                 if i in columns: 
+                    if row_size == None:
+                        self.row_size = len(self.table.column(i).to_pylist())
                     temp_read = self.table.column(i).to_pylist()
                     self.data.append(pa.array(temp_read[0:row_size]))
 
@@ -154,11 +162,11 @@ class store_sales(dataset):
 class store(dataset):
 
     def __init__(self, columns=None,row_size=None, c_prefix=None, metadata_information=None,field_metadata=None,metadata_indexes=None):
-        if metadata_information == None or metadata_indexes==None:
+        if metadata_information == None:
             assert(false)
         super().__init__(c_prefix, metadata_information)
-        self.type = ['int64']
-        self.s_store_sk=pa.field('store_sk', pa.int64(), nullable=False)
+        self.field_metadata = field_metadata
+        self.metadata_information=metadata_information
         # configure schema
         self.s_columns_index = [
              "s_store_sk",
@@ -222,14 +230,18 @@ class store(dataset):
              "s_gmt_offset": pa.field('gmt_offset', pa.float64(), nullable=False),
              "s_tax_precentage": pa.field('tax_precentage', pa.float64(), nullable=False)
         }
-        self.metadata_information=metadata_information
+        #TODO Merge multiple for loops, do this for all
+        if metadata_indexes != None:
+            print(f"Adding field metadata to indexes: ")
+            for i in metadata_indexes:
+                print(f"{self.s_columns_index[i]}")
+                self.s_columns[self.s_columns_index[i]] = self.s_columns[self.s_columns_index[i]].add_metadata(self.field_metadata)
         self.schema_vars = []
         for i in columns:
             self.schema_vars.append(self.s_columns[self.s_columns_index[i]])
         self.schema = pa.schema(self.schema_vars,metadata=self.metadata_information)
         #self.schema.add_metadata()
         # field metadata such as epc, not always applicable
-        self.field_metadata = field_metadata
         # output file names
         self.recordbatch_name="s_recordbatch.rb"
         self.database_name = "dataset/store.dat"
@@ -246,9 +258,10 @@ class store(dataset):
             print(f"Size of read table is: {len(self.table)} rows. You have selected to stream {row_size} number of rows.")
             for i,_ in enumerate(self.table):
                 if i in columns: 
+                    if row_size == None:
+                        self.row_size = len(self.table.column(i).to_pylist())
                     temp_read = self.table.column(i).to_pylist()
                     self.data.append(pa.array(temp_read[0:row_size]))
-        self.print_col(0)
 
     def stream_to_file(self):
         print(f"Streaming to file {self.recordbatch_name}.....")
@@ -270,25 +283,90 @@ class store(dataset):
 
 class date_dim(dataset):
 
-    def __init__(self, columns=None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None):
-        if metadata_information == None or metadata_indexes==None:
+    def __init__(self, columns=None,row_size=None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None):
+        if metadata_information == None:
             assert(False)
         super().__init__(c_prefix, metadata_information)
+        # configure schema
+        self.metadata_information=metadata_information
+        self.field_metadata = field_metadata
+        self.dt_columns_index = [
+            "d_date_sk",
+            "d_date_id",
+            "d_date",
+            "d_month_seq",
+            "d_week_seq",
+            "d_quarter_seq",
+            "d_year",
+            "d_dow",
+            "d_moy",
+            "d_dom",
+            "d_qoy",
+            "d_fy_year",
+            "d_fy_quarter_seq",
+            "d_fy_week_seq",
+            "d_day_name",
+            "d_quarter_name",
+            "d_holiday",
+            "d_weekend",
+            "d_following_holiday",
+            "d_first_dom",
+            "d_last_dom",
+            "d_same_day_ly",
+            "d_same_day_lq",
+            "d_current_day",
+            "d_current_week",
+            "d_current_month",
+            "d_current_quarter",
+            "d_current_year"
+        ]
+        self.dt_columns = {
+            "d_date_sk": pa.field('date_sk', pa.int64(), nullable=False),
+            "d_date_id": pa.field('date_id', pa.utf8(), nullable=False),
+            "d_date": pa.field('date', pa.utf8(), nullable=False),
+            "d_month_seq": pa.field('month_seq', pa.int64(), nullable=False),
+            "d_week_seq": pa.field('week_seq', pa.int64(), nullable=False),
+            "d_quarter_seq": pa.field('quarter_seq', pa.int64(), nullable=False),
+            "d_year":pa.field('year', pa.int64(), nullable=False),
+            "d_dow": pa.field('dow', pa.int64(), nullable=False),
+            "d_moy": pa.field('moy', pa.int64(), nullable=False),
+            "d_dom": pa.field('dom', pa.int64(), nullable=False),
+            "d_qoy": pa.field('qoy', pa.int64(), nullable=False),
+            "d_fy_year": pa.field('fy_year', pa.int64(), nullable=False),
+            "d_fy_quarter_seq": pa.field('fy_quarter_seq', pa.int64(), nullable=False),
+            "d_fy_week_seq": pa.field('fy_week_seq', pa.int64(), nullable=False),
+            "d_day_name": pa.field('day_name', pa.utf8(), nullable=False),
+            "d_quarter_name": pa.field('quarter_name', pa.utf8(), nullable=False),
+            "d_holiday": pa.field('holiday', pa.utf8(), nullable=False),
+            "d_weekend": pa.field('weekend', pa.utf8(), nullable=False),
+            "d_following_holiday": pa.field('following_holiday', pa.utf8(), nullable=False),
+            "d_first_dom": pa.field('first_dom', pa.int64(), nullable=False),
+            "d_last_dom": pa.field('last_dom', pa.int64(), nullable=False),
+            "d_same_day_ly": pa.field('same_day_ly', pa.int64(), nullable=False),
+            "d_same_day_lq": pa.field('same_day_lq', pa.int64(), nullable=False),
+            "d_current_day": pa.field('current_day', pa.utf8(), nullable=False),
+            "d_current_week": pa.field('current_week', pa.utf8(), nullable=False),
+            "d_current_month": pa.field('current_month', pa.utf8(), nullable=False),
+            "d_current_quarter": pa.field('current_quarter', pa.utf8(), nullable=False),
+            "d_current_year": pa.field('current_year', pa.utf8(), nullable=False)
+        }
+        #TODO Merge multiple for loops, do this for all
+        if metadata_indexes != None:
+            print(f"Adding field metadata to indexes: ")
+            for i in metadata_indexes:
+                print(f"{self.dt_columns_index[i]}")
+                self.dt_columns[self.dt_columns_index[i]] = self.dt_columns[self.dt_columns_index[i]].add_metadata(self.field_metadata)
+        self.schema_vars = []
+        for i in columns:
+            self.schema_vars.append(self.dt_columns[self.dt_columns_index[i]])
+        self.schema = pa.schema(self.schema_vars,metadata=self.metadata_information)
+        #self.schema.add_metadata()
+        # field metadata such as epc, not always applicable
 
         self.recordbatch_name="dt_recordbatch.rb"
         self.database_name = "dataset/date_dim.dat"
-        self.type = ['int64','int64']
-        self.d_date_sk=pa.field('date_sk',pa.int64(), nullable=False)
-        self.d_year=pa.field('year', pa.int64(),nullable=False)
-
-        self.metadata_information=metadata_information
-        # Configure schema
-        #TODO : make this general
-        self.schema = pa.schema([self.d_date_sk,
-                                 self.d_year],metadata=self.metadata_information)
         #self.schema.add_metadata(self.metadata_information)
         # Field metadata such as epc, not always applicable
-        self.field_metadata = field_metadata
         # output file names
         self.options="|"
         if columns == None:
@@ -300,11 +378,13 @@ class date_dim(dataset):
         else: 
             print(f"Reading some columns : {columns}")
             self.table = csv.read_csv(self.prefix + self.database_name,parse_options=self.opt)
-            print(f"Size of table is: {len(self.table)}")
+            print(f"Size of read table is: {len(self.table)} rows. You have selected to stream {row_size} number of rows.")
             for i,_ in enumerate(self.table):
                 if i in columns: 
-                    self.data.append(pa.array(self.table.column(i).to_pylist()))
-        self.print_col(0)
+                    if row_size == None:
+                        self.row_size = len(self.table.column(i).to_pylist())
+                    temp_read = self.table.column(i).to_pylist()
+                    self.data.append(pa.array(temp_read[0:row_size]))
 
     def stream_to_file(self):
         print(f"Streaming to file {self.recordbatch_name}.....")
@@ -325,24 +405,54 @@ class date_dim(dataset):
 
 class customer_address(dataset):
 
-    def __init__(self, columns=None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None):
-        if metadata_information == None or metadata_indexes==None:
+    def __init__(self, columns=None,row_size = None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None):
+        if metadata_information == None:
             assert(False)
         super().__init__(c_prefix, metadata_information)
-        self.field_metadata = field_metadata
-        self.type=['int64','string','string']
-        self.ca_address_sk=pa.field('address_sk', pa.int64(), nullable=False)
-        self.ca_state=pa.field('state', pa.utf8(), nullable=False)
-        self.ca_country=pa.field('country', pa.utf8(), nullable=False)
         self.metadata_information=metadata_information
-        # Configure schema
-        #TODO : make this general
-        self.schema = pa.schema([self.ca_address_sk,
-                                 self.ca_state,
-                                 self.ca_country],metadata=self.metadata_information)
-        #self.schema.add_metadata(metadata_information)
-        self.ca_country=self.ca_country.add_metadata(self.field_metadata)
-        self.ca_state=self.ca_state.add_metadata(self.field_metadata)
+        self.field_metadata = field_metadata
+        # configure schema
+        self.ca_columns_index = [
+            "ca_address_sk",
+            "ca_address_id",
+            "ca_street_number",
+            "ca_street_name",
+            "ca_street_type",
+            "ca_suite_number",
+            "ca_city",
+            "ca_county",
+            "ca_state",
+            "ca_zip",
+            "ca_country",
+            "ca_gmt_offset",
+            "ca_location_type"
+        ]
+        self.ca_columns = {
+            "ca_address_sk":        pa.field('address_sk', pa.int64(), nullable=False),
+            "ca_address_id":        pa.field('address_id', pa.utf8(), nullable=False),
+            "ca_street_number":     pa.field('street_number', pa.utf8(), nullable=False),
+            "ca_street_name":       pa.field('street_name', pa.utf8(), nullable=False),
+            "ca_street_type":       pa.field('street_type', pa.utf8(), nullable=False),
+            "ca_suite_number":      pa.field('suite_number', pa.utf8(), nullable=False),
+            "ca_city":              pa.field('city', pa.utf8(), nullable=False),
+            "ca_county":            pa.field('county', pa.utf8(), nullable=False),
+            "ca_state":             pa.field('state', pa.utf8(), nullable=False),
+            "ca_zip":               pa.field('zip', pa.utf8(), nullable=False),
+            "ca_country":           pa.field('country', pa.utf8(), nullable=False),
+            "ca_gmt_offset":        pa.field('gmt_offset', pa.float64(), nullable=False),
+            "ca_location_type":     pa.field('location_type', pa.utf8(), nullable=False),
+        }
+        #TODO Merge multiple for loops, do this for all
+        if metadata_indexes != None:
+            print(f"Adding field metadata to indexes: ")
+            for i in metadata_indexes:
+                print(f"{self.ca_columns_index[i]}")
+                self.ca_columns[self.ca_columns_index[i]] = self.ca_columns[self.ca_columns_index[i]].add_metadata(self.field_metadata)
+        self.schema_vars = []
+        for i in columns:
+            self.schema_vars.append(self.ca_columns[self.ca_columns_index[i]])
+        self.schema = pa.schema(self.schema_vars,metadata=self.metadata_information)
+        #self.ca_state=self.ca_state.add_metadata(self.field_metadata)
         # Field metadata such as epc, not always applicable
         # output file names
         self.recordbatch_name="ca_recordbatch.rb"
@@ -357,11 +467,13 @@ class customer_address(dataset):
         else: 
             print(f"Reading some columns : {columns}")
             self.table = csv.read_csv(self.prefix + self.database_name,parse_options=self.opt)
-            print(f"Size of table is: {len(self.table)}")
+            print(f"Size of read table is: {len(self.table)} rows. You have selected to stream {row_size} number of rows.")
             for i,_ in enumerate(self.table):
                 if i in columns: 
-                    self.data.append(pa.array(self.table.column(i).to_pylist()))
-        self.print_col(0)
+                    if row_size == None:
+                        self.row_size = len(self.table.column(i).to_pylist())
+                    temp_read = self.table.column(i).to_pylist()
+                    self.data.append(pa.array(temp_read[0:row_size]))
 
     def stream_to_file(self):
         print(f"Streaming to file {self.recordbatch_name}.....")
@@ -383,24 +495,48 @@ class customer_address(dataset):
 
 class customer_demographics(dataset):
 
-    def __init__(self, columns=None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None):
+    def __init__(self, columns=None,row_size = None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None):
         #TODO implement metadata indexes
-        if metadata_information == None or metadata_indexes==None:
+        if metadata_information == None:
             assert(False)
         super().__init__(c_prefix, metadata_information)
         self.field_metadata = field_metadata
-        self.type = ['int64','string', 'string']
-        self.cd_demo_sk=pa.field('demo_sk', pa.int64(), nullable=False)
-        self.cd_marital_status=pa.field('marital_status', pa.utf8(),nullable=False)
-        self.cd_education_status=pa.field('education_status', pa.utf8(), nullable= False)
         self.metadata_information=metadata_information
-        # Configure schema
-        #TODO : make this general
-        self.schema = pa.schema([self.cd_demo_sk,
-                                 self.cd_marital_status,
-                                 self.cd_education_status],metadata=self.metadata_information)
-        self.cd_marital_status=self.cd_marital_status.add_metadata(self.field_metadata)
-        self.cd_education_status=self.cd_education_status.add_metadata(self.field_metadata)
+        # configure schema
+        self.cd_columns_index = [
+            "cd_demo_sk",
+            "cd_gender",
+            "cd_marital_status",
+            "cd_education_status",
+            "cd_purchase_estimate",
+            "cd_credit_rating",
+            "cd_dep_count",
+            "cd_dep_employed_count",
+            "cd_dep_college_count"
+        ]
+        self.cd_columns = {
+            "cd_demo_sk":               pa.field('demo_sk', pa.int64(), nullable=False),
+            "cd_gender":                pa.field('gender', pa.utf8(), nullable=False),
+            "cd_marital_status":        pa.field('marital_status', pa.utf8(), nullable=False),
+            "cd_education_status":      pa.field('education_status', pa.utf8(), nullable=False),
+            "cd_purchase_estimate":     pa.field('purchase_estimate', pa.int64(), nullable=False),
+            "cd_credit_rating":         pa.field('credit_rating', pa.utf8(), nullable=False),
+            "cd_dep_count":             pa.field('dep_count', pa.int64(), nullable=False),
+            "cd_dep_employed_count":    pa.field('dep_employed_count', pa.int64(), nullable=False),
+            "cd_dep_college_count":     pa.field('dep_college_count', pa.int64(), nullable=False)
+        }
+        #TODO Merge multiple for loops, do this for all
+        if metadata_indexes != None:
+            print(f"Adding field metadata to indexes: ")
+            for i in metadata_indexes:
+                print(f"{self.cd_columns_index[i]}")
+                self.cd_columns[self.cd_columns_index[i]] = self.cd_columns[self.cd_columns_index[i]].add_metadata(self.field_metadata)
+        self.schema_vars = []
+        for i in columns:
+            self.schema_vars.append(self.cd_columns[self.cd_columns_index[i]])
+        self.schema = pa.schema(self.schema_vars,metadata=self.metadata_information)
+        #self.cd_marital_status=self.cd_marital_status.add_metadata(self.field_metadata)
+        #self.cd_education_status=self.cd_education_status.add_metadata(self.field_metadata)
         #self.schema.add_metadata(metadata_information)
         # Field metadata such as epc, not always applicable
         # output file names
@@ -416,11 +552,13 @@ class customer_demographics(dataset):
         else: 
             print(f"Reading some columns : {columns}")
             self.table = csv.read_csv(self.prefix + self.database_name,parse_options=self.opt)
-            print(f"Size of table is: {len(self.table)}")
+            print(f"Size of read table is: {len(self.table)} rows. You have selected to stream {row_size} number of rows.")
             for i,_ in enumerate(self.table):
                 if i in columns: 
-                    self.data.append(pa.array(self.table.column(i).to_pylist()))
-        self.print_col(0)
+                    if row_size == None:
+                        self.row_size = len(self.table.column(i).to_pylist())
+                    temp_read = self.table.column(i).to_pylist()
+                    self.data.append(pa.array(temp_read[0:row_size]))
 
     def stream_to_file(self):
         print(f"Streaming to file {self.recordbatch_name}.....")

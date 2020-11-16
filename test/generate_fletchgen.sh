@@ -5,7 +5,7 @@
 source ./.env
 
 mkdir build && cd build
-fletchgen -n Join -r $DATASET_DIR/$TIME_PREFIX/ss_recordbatch.rb \
+fletchgen -n Join -r $DATASET_DIR/$TIME_PREFIX/*.rb \
           -s tpc.srec \
           -t tpc_out.srec \
           -l vhdl \
