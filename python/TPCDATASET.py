@@ -50,23 +50,19 @@ class store_sales(dataset):
             assert(False)
         super().__init__(c_prefix, metadata_information)
         self.type = ['int64','int64','int64','int64','int64','float64','float64']
-        self.ss_sold_date_sk = pa.field('sold_date_sk', pa.int64(), nullable=False)
-        self.ss_cdemo_sk= pa.field('cdemo_sk', pa.int64(), nullable=False)
-        self.ss_addr_sk= pa.field('addr_sk', pa.int64(), nullable=False)
+        #self.ss_sold_date_sk = pa.field('sold_date_sk', pa.int64(), nullable=False)
+        #self.ss_cdemo_sk= pa.field('cdemo_sk', pa.int64(), nullable=False)
+        #self.ss_addr_sk= pa.field('addr_sk', pa.int64(), nullable=False)
         self.ss_store_sk= pa.field('store_sk', pa.int64(), nullable=False)
         self.ss_quantity= pa.field('quantity', pa.int64(), nullable=False)
-        self.ss_sales_price=pa.field('sales_price', pa.float64(), nullable=False)
-        self.ss_net_profit=pa.field('net_profit', pa.float64(), nullable=False)
+        #self.ss_sales_price=pa.field('sales_price', pa.float64(), nullable=False)
+        #self.ss_net_profit=pa.field('net_profit', pa.float64(), nullable=False)
         # Configure schema
         self.metadata_information=metadata_information
         #TODO : make this general
-        self.schema = pa.schema([self.ss_sold_date_sk, 
-                                 self.ss_cdemo_sk,
-                                 self.ss_addr_sk, 
+        self.schema = pa.schema([
                                  self.ss_store_sk,
-                                 self.ss_quantity, 
-                                 self.ss_sales_price, 
-                                 self.ss_net_profit],metadata=self.metadata_information)
+                                 self.ss_quantity],metadata=self.metadata_information)
         #self.schema.add_metadata(self.metadata_information)
         # Field metadata such as epc, not always applicable
         self.field_metadata = field_metadata
@@ -86,7 +82,8 @@ class store_sales(dataset):
             print(f"Size of table is: {len(self.table)}")
             for i,_ in enumerate(self.table):
                 if i in columns: 
-                    self.data.append(pa.array(self.table.column(i).to_pylist()))
+                    temp_list = self.table.column(i).to_pylist()
+                    self.data.append(pa.array(temp_list[0:20]))
         self.print_col(0)
 
     def stream_to_file(self):
