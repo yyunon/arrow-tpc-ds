@@ -32,7 +32,8 @@ class dataset:
         if not os.path.isdir(self.dir_name):
             os.mkdir(self.dir_name)
         #Create env var. to be read by fletchgen
-        with open("./.env", "w") as f:
+        env=raw_input("Enter the .env directory pwd: ")
+        with open(env, "w") as f:
             f.write('export TIME_PREFIX="'+str(self.timestamp) + '"')
 
     @property
