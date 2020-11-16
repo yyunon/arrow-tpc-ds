@@ -32,9 +32,16 @@ class dataset:
         if not os.path.isdir(self.dir_name):
             os.mkdir(self.dir_name)
         #Create env var. to be read by fletchgen
-        env=raw_input("Enter the .env directory pwd: ")
-        with open(env, "w") as f:
+        from os import path
+        if path.exists(".env"):
+            env_file = ".env"
+        else:
+            env=input('Could not find .env. Enter the .env directory pwd(No trailing backspace and use the same directory with fletchgen or generate_fletchgen): \n')
+            env_file = env + "/.env"
+            
+        with open(env_file, "w") as f:
             f.write('export TIME_PREFIX="'+str(self.timestamp) + '"')
+
 
     @property
     def options(self):
@@ -103,14 +110,14 @@ class store_sales(dataset):
         self.metadata_information=metadata_information
         self.schema_vars = []
         for i in columns:
-            self.schema_vars.append(self.ss_columns_index[i])
+            self.schema_vars.append(self.ss_columns[self.ss_columns_index[i]])
         self.schema = pa.schema(self.schema_vars,metadata=self.metadata_information)
         #self.schema.add_metadata(self.metadata_information)
         # Field metadata such as epc, not always applicable
         self.field_metadata = field_metadata
         # output file names
         self.recordbatch_name="ss_recordbatch.rb"
-        self.database_name = "dataset/store_sales.dat"
+        self.database_name = "dataset/store_sales_backup.dat"
         self.options="|"
         if columns == None:
             print("Reading all columns...")
@@ -126,6 +133,122 @@ class store_sales(dataset):
                 if i in columns: 
                     temp_read = self.table.column(i).to_pylist()
                     self.data.append(pa.array(temp_read[0:row_size]))
+
+    def stream_to_file(self):
+        print(f"Streaming to file {self.recordbatch_name}.....")
+        self.recordbatch = pa.RecordBatch.from_arrays(self.data, schema=self.schema)
+
+        # Create an Arrow RecordBatchFileWriter.
+        self.writer = pa.RecordBatchFileWriter(self.dir_name + "/" + self.recordbatch_name, self.schema)
+
+        # Write the RecordBatch.
+        self.writer.write(self.recordbatch)
+
+        # Close the writer.
+        self.writer.close()
+
+    def print_col(self,column):
+        assert(self.data != None)
+        print(f"Column: {column}, Row:{self.data[column]} ")
+
+class store(dataset):
+
+    def __init__(self, columns=None,row_size=None, c_prefix=None, metadata_information=None,field_metadata=None,metadata_indexes=None):
+        if metadata_information == None or metadata_indexes==None:
+            assert(false)
+        super().__init__(c_prefix, metadata_information)
+        self.type = ['int64']
+        self.s_store_sk=pa.field('store_sk', pa.int64(), nullable=False)
+        # configure schema
+        self.s_columns_index = [
+             "s_store_sk",
+             "s_store_id",
+             "s_rec_start_date",
+             "s_rec_end_date",
+             "s_closed_date_sk",
+             "s_store_name",
+             "s_number_employees",
+             "s_floor_space",
+             "s_hours",
+             "s_manager",
+             "s_market_id",
+             "s_geography_class",
+             "s_market_desc",
+             "s_market_manager",
+             "s_division_id",
+             "s_division_name",
+             "s_company_id",
+             "s_company_name",
+             "s_street_number",
+             "s_street_name",
+             "s_street_type",
+             "s_suite_number",
+             "s_city",
+             "s_county",
+             "s_state",
+             "s_zip",
+             "s_country",
+             "s_gmt_offset",
+             "s_tax_precentage"
+        ]
+        self.s_columns = {
+             "s_store_sk": pa.field('store_sk', pa.int64(), nullable=False),
+             "s_store_id": pa.field('store_id', pa.utf8(), nullable=False),
+             "s_rec_start_date": pa.field('rec_start_date', pa.utf8(), nullable=False),
+             "s_rec_end_date": pa.field('rec_end_date', pa.utf8(), nullable=False),
+             "s_closed_date_sk": pa.field('closed_date_sk', pa.int64(), nullable=False),
+             "s_store_name": pa.field('store_name', pa.utf8(), nullable=False),
+             "s_number_employees": pa.field('number_employees', pa.int64(), nullable=False),
+             "s_floor_space": pa.field('floor_space', pa.int64(), nullable=False),
+             "s_hours": pa.field('hours', pa.utf8(), nullable=False),
+             "s_manager": pa.field('manager', pa.utf8(), nullable=False),
+             "s_market_id": pa.field('market_id', pa.utf8(), nullable=False),
+             "s_geography_class": pa.field('geography_class', pa.utf8(), nullable=False),
+             "s_market_desc": pa.field('market_desc', pa.utf8(), nullable=False),
+             "s_market_manager": pa.field('market_manager', pa.utf8(), nullable=False),
+             "s_division_id": pa.field('division_id', pa.int64(), nullable=False),
+             "s_division_name": pa.field('division_name', pa.utf8(), nullable=False),
+             "s_company_id": pa.field('company_id', pa.int64(), nullable=False),
+             "s_company_name": pa.field('company_name', pa.utf8(), nullable=False),
+             "s_street_number": pa.field('street_number', pa.utf8(), nullable=False),
+             "s_street_name": pa.field('street_name', pa.utf8(), nullable=False),
+             "s_street_type": pa.field('street_type', pa.utf8(), nullable=False),
+             "s_suite_number": pa.field('suite_number', pa.utf8(), nullable=False),
+             "s_city": pa.field('city', pa.utf8(), nullable=False),
+             "s_county": pa.field('county', pa.utf8(), nullable=False),
+             "s_state": pa.field('state', pa.utf8(), nullable=False),
+             "s_zip": pa.field('zip', pa.utf8(), nullable=False),
+             "s_country": pa.field('country', pa.utf8(), nullable=False),
+             "s_gmt_offset": pa.field('gmt_offset', pa.float64(), nullable=False),
+             "s_tax_precentage": pa.field('tax_precentage', pa.float64(), nullable=False)
+        }
+        self.metadata_information=metadata_information
+        self.schema_vars = []
+        for i in columns:
+            self.schema_vars.append(self.s_columns[self.s_columns_index[i]])
+        self.schema = pa.schema(self.schema_vars,metadata=self.metadata_information)
+        #self.schema.add_metadata()
+        # field metadata such as epc, not always applicable
+        self.field_metadata = field_metadata
+        # output file names
+        self.recordbatch_name="s_recordbatch.rb"
+        self.database_name = "dataset/store.dat"
+        self.options="|"
+        if columns == None:
+            print("reading all columns...")
+            self.table = csv.read_csv(self.prefix + self.database_name,parse_options=self.opt)
+            for i,_ in enumerate(self.table):
+                if i in columns: 
+                    self.data.append(pa.array(self.table.column(i).to_pylist()))
+        else: 
+            print(f"reading some columns : {columns}")
+            self.table = csv.read_csv(self.prefix + self.database_name,parse_options=self.opt)
+            print(f"Size of read table is: {len(self.table)} rows. You have selected to stream {row_size} number of rows.")
+            for i,_ in enumerate(self.table):
+                if i in columns: 
+                    temp_read = self.table.column(i).to_pylist()
+                    self.data.append(pa.array(temp_read[0:row_size]))
+        self.print_col(0)
 
     def stream_to_file(self):
         print(f"Streaming to file {self.recordbatch_name}.....")
@@ -316,54 +439,4 @@ class customer_demographics(dataset):
         assert(self.data != None)
         print(f"Column: {column}, Row:{self.data[column]} ")
 
-class store(dataset):
-
-    def __init__(self, columns=None, c_prefix=None, metadata_information=None,field_metadata=None,metadata_indexes=None):
-        if metadata_information == None or metadata_indexes==None:
-            assert(false)
-        super().__init__(c_prefix, metadata_information)
-        self.type = ['int64']
-        self.s_store_sk=pa.field('store_sk', pa.int64(), nullable=False)
-        # configure schema
-        self.metadata_information=metadata_information
-        #todo : make this general
-        self.schema = pa.schema([self.s_store_sk],metadata=self.metadata_information)
-        #self.schema.add_metadata()
-        # field metadata such as epc, not always applicable
-        self.field_metadata = field_metadata
-        # output file names
-        self.recordbatch_name="s_recordbatch.rb"
-        self.database_name = "dataset/store.dat"
-        self.options="|"
-        if columns == None:
-            print("reading all columns...")
-            self.table = csv.read_csv(self.prefix + self.database_name,parse_options=self.opt)
-            for i,_ in enumerate(self.table):
-                if i in columns: 
-                    self.data.append(pa.array(self.table.column(i).to_pylist()))
-        else: 
-            print(f"reading some columns : {columns}")
-            self.table = csv.read_csv(self.prefix + self.database_name,parse_options=self.opt)
-            print(f"size of table is: {len(self.table)}")
-            for i,_ in enumerate(self.table):
-                if i in columns: 
-                    self.data.append(pa.array(self.table.column(i).to_pylist()))
-        self.print_col(0)
-
-    def stream_to_file(self):
-        print(f"Streaming to file {self.recordbatch_name}.....")
-        self.recordbatch = pa.RecordBatch.from_arrays(self.data, schema=self.schema)
-
-        # Create an Arrow RecordBatchFileWriter.
-        self.writer = pa.RecordBatchFileWriter(self.dir_name + "/" + self.recordbatch_name, self.schema)
-
-        # Write the RecordBatch.
-        self.writer.write(self.recordbatch)
-
-        # Close the writer.
-        self.writer.close()
-
-    def print_col(self,column):
-        assert(self.data != None)
-        print(f"Column: {column}, Row:{self.data[column]} ")
 
