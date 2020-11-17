@@ -12,6 +12,7 @@ class dataset:
         self.recordbatch_name=None
         self.table=None
         self.data=[]
+        self.txt_data=[]
         self.schema=None
         self.recordbatch=None
         self.writer=None
@@ -43,6 +44,8 @@ class dataset:
         with open(env_file, "w") as f:
             f.write('export TIME_PREFIX="'+str(self.timestamp) + '"')
 
+    def py_list(self):
+        return self.txt_data
 
     @property
     def options(self):
@@ -51,6 +54,16 @@ class dataset:
     @options.setter
     def options(self, d='|'):
         self.opt.delimiter = d
+
+    @staticmethod
+    def stream_to_txt_raw(mylist,filename):
+        txt_file = open(filename,'w')
+        for el in mylist:
+            txt_file.write(str(el))
+            txt_file.write(',')
+        txt_file.write('\n')
+        txt_file.close()
+
 
 class store_sales(dataset):
 
@@ -140,6 +153,7 @@ class store_sales(dataset):
                     if row_size == None:
                         self.row_size = len(self.table.column(i).to_pylist())
                     temp_read = self.table.column(i).to_pylist()
+                    self.txt_data.append(temp_read[0:row_size])
                     self.data.append(pa.array(temp_read[0:row_size]))
 
     def stream_to_file(self):
@@ -384,6 +398,7 @@ class date_dim(dataset):
                     if row_size == None:
                         self.row_size = len(self.table.column(i).to_pylist())
                     temp_read = self.table.column(i).to_pylist()
+                    self.txt_data.append(temp_read[0:row_size])
                     self.data.append(pa.array(temp_read[0:row_size]))
 
     def stream_to_file(self):
@@ -473,6 +488,7 @@ class customer_address(dataset):
                     if row_size == None:
                         self.row_size = len(self.table.column(i).to_pylist())
                     temp_read = self.table.column(i).to_pylist()
+                    self.txt_data.append(temp_read[0:row_size])
                     self.data.append(pa.array(temp_read[0:row_size]))
 
     def stream_to_file(self):
@@ -558,6 +574,7 @@ class customer_demographics(dataset):
                     if row_size == None:
                         self.row_size = len(self.table.column(i).to_pylist())
                     temp_read = self.table.column(i).to_pylist()
+                    self.txt_data.append(temp_read[0:row_size])
                     self.data.append(pa.array(temp_read[0:row_size]))
 
     def stream_to_file(self):
