@@ -123,7 +123,7 @@ class store_sales(dataset):
         # Field metadata such as epc, not always applicable
         # output file names
         self.recordbatch_name="ss_recordbatch.rb"
-        self.database_name = "dataset/store_sales_backup.dat"
+        self.database_name = "dataset/store_sales.dat"
         self.options="|"
         if columns == None:
             print("Reading all columns...")
