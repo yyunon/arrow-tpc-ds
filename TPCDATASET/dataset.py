@@ -678,13 +678,20 @@ class line_item(dataset):
                             dates.append(to_integer(temp_read[i]))
                         temp_read = dates
                     if i==4 or i==5 or i==6 or i==7:
-                        from fxpmath import Fxp
+                        def to_fixed(f,e):
+                            a = f* (2**e)
+                            b = int(round(a))
+                            if a < 0:
+                                # next three lines turns b into it's 2's complement.
+                                b = abs(b)
+                                b = ~b
+                                b = b + 1
+                            return b
                         fixed_pts=[]
                         for i in range(len(temp_read)):
-                            y_fxp = Fxp(float(temp_read[i]), signed=True, n_word=64, n_frac=18)
+                            y_fxp = to_fixed(temp_read[i], 18)
                             fixed_pts.append(y_fxp)
                         temp_read = fixed_pts
-
                     self.txt_data.append(temp_read[0:row_size])
                     self.data.append(pa.array(temp_read[0:row_size]))
 

@@ -13,6 +13,6 @@ setup(name='TPCDATASET',
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache License 2.0"
       ],
-      install_requires=['pyarrow'],
+      install_requires=['pyarrow==1.0'],
       python_requires='>=3.6',
       include_package_data=True)
