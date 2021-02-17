@@ -597,7 +597,7 @@ class customer_demographics(dataset):
 # TPCH
 class line_item(dataset):
 
-    def __init__(self, columns=None, row_size = None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None):
+    def __init__(self, columns=None, row_size = None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None, convert_to_fixed=False):
         if metadata_information == None:
             assert(False)
         super().__init__(c_prefix, metadata_information)
@@ -626,9 +626,9 @@ class line_item(dataset):
             'l_partkey'       : pa.field('partkey', pa.int64(), nullable=False),
             'l_suppkey'       : pa.field('suppkey', pa.int64(), nullable=False),
             'l_linenumber'       : pa.field('linenumber', pa.int64(), nullable=False),
-            'l_quantity'   : pa.field('quantity', pa.int64(), nullable=False), #
-            'l_extendedprice'           : pa.field('extendedprice', pa.int64(), nullable=False), #
-            'l_discount'           : pa.field('discount', pa.int64(), nullable=False), #
+            'l_quantity'   : pa.field('quantity', pa.float64(), nullable=False), #
+            'l_extendedprice'           : pa.field('extendedprice', pa.float64(), nullable=False), #
+            'l_discount'           : pa.field('discount', pa.float64(), nullable=False), #
             'l_tax'            : pa.field('tax', pa.int64(), nullable=False), #
             'l_returnflag'           : pa.field('returnflag', pa.utf8(), nullable=False),
             'l_linestatus'           : pa.field('linestatus', pa.utf8(), nullable=False),
@@ -653,7 +653,7 @@ class line_item(dataset):
         # Field metadata such as epc, not always applicable
         # output file names
         self.recordbatch_name="l_recordbatch.rb"
-        self.database_name = "dataset/lineitem.tbl"
+        self.database_name = "dataset/lineitem.dat"
         self.options="|"
         if columns == None:
             print("Reading all columns...")
@@ -677,7 +677,7 @@ class line_item(dataset):
                                 return 10000*dt_time.year + 100*dt_time.month + dt_time.day
                             dates.append(to_integer(temp_read[i]))
                         temp_read = dates
-                    if i==4 or i==5 or i==6 or i==7:
+                    if convert_to_fixed == True and (i==4 or i==5 or i==6 or i==7):
                         def to_fixed(f,e):
                             a = f* (2**e)
                             b = int(round(a))
