@@ -597,7 +597,7 @@ class customer_demographics(dataset):
 # TPCH
 class line_item(dataset):
 
-    def __init__(self, columns=None, row_size = None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None, convert_to_fixed=False):
+    def __init__(self, columns=None, row_size = None, c_prefix=None,metadata_information=None,field_metadata=None,metadata_indexes=None, convert_to_fixed=False, convert_date_to_int=False, custom_date_encoding=False):
         if metadata_information == None:
             assert(False)
         super().__init__(c_prefix, metadata_information)
@@ -632,9 +632,9 @@ class line_item(dataset):
             'l_tax'            : pa.field('tax', pa.int64(), nullable=False), #
             'l_returnflag'           : pa.field('returnflag', pa.utf8(), nullable=False),
             'l_linestatus'           : pa.field('linestatus', pa.utf8(), nullable=False),
-            'l_shipdate'      : pa.field('shipdate', pa.int64(), nullable=False),
-            'l_commitdate'           : pa.field('commitdate', pa.int64(), nullable=False),
-            'l_receiptdate'     : pa.field('receiptdate', pa.int64(), nullable=False),
+            'l_shipdate'      : pa.field('shipdate', pa.date64(), nullable=False),
+            'l_commitdate'           : pa.field('commitdate', pa.date64(), nullable=False),
+            'l_receiptdate'     : pa.field('receiptdate', pa.date64(), nullable=False),
             'l_shipinstruct'         : pa.field('shipinstruct', pa.utf8(), nullable=False),
             'l_shipmode'        : pa.field('shipmode', pa.utf8(), nullable=False),
             'l_comment'   : pa.field('comment', pa.utf8(), nullable=False),
@@ -670,14 +670,24 @@ class line_item(dataset):
                     if row_size == None:
                         self.row_size = len(self.table.column(i).to_pylist())
                     temp_read = self.table.column(i).to_pylist()
-                    if i == 10 or i ==11 or i==12:
+                    if convert_date_to_int == True and (i == 10 or i ==11 or i==12):
                         dates= []
                         for i in range(len(temp_read)):
-                            def to_integer(dt_time):
-                                return 10000*dt_time.year + 100*dt_time.month + dt_time.day
-                            dates.append(to_integer(temp_read[i]))
+                            if custom_date_encoding == True:
+                                def to_integer(dt_time):
+                                    return 10000*dt_time.year + 100*dt_time.month + dt_time.day
+                                dates.append(to_integer(temp_read[i]))
+                            else:
+                                import datetime
+                                epoch = datetime.datetime(1970,1,1)
+                                def unix_time_millis(dt):
+                                    return (dt - epoch).days
+                                dates.append(unix_time_millis(temp_read[i]))
                         temp_read = dates
+                    if (i==4 or i==5 or i==6 or i==7):
+                        temp_read = [float(i) for i in temp_read]
                     if convert_to_fixed == True and (i==4 or i==5 or i==6 or i==7):
+                        temp_read = [float(i) for i in temp_read]
                         def to_fixed(f,e):
                             a = f* (2**e)
                             b = int(round(a))
