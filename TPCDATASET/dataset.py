@@ -632,7 +632,7 @@ class line_item(dataset):
             'l_tax'            : pa.field('tax', pa.int64(), nullable=False), #
             'l_returnflag'           : pa.field('returnflag', pa.utf8(), nullable=False),
             'l_linestatus'           : pa.field('linestatus', pa.utf8(), nullable=False),
-            'l_shipdate'      : pa.field('shipdate', pa.date64(), nullable=False),
+            'l_shipdate'      : pa.field('shipdate', pa.date32(), nullable=False),
             'l_commitdate'           : pa.field('commitdate', pa.date64(), nullable=False),
             'l_receiptdate'     : pa.field('receiptdate', pa.date64(), nullable=False),
             'l_shipinstruct'         : pa.field('shipinstruct', pa.utf8(), nullable=False),
@@ -679,9 +679,10 @@ class line_item(dataset):
                                 dates.append(to_integer(temp_read[i]))
                             else:
                                 import datetime
+                                import numpy as np
                                 epoch = datetime.datetime(1970,1,1)
                                 def unix_time_millis(dt):
-                                    return (dt - epoch).days
+                                    return np.int32((dt - epoch).days)
                                 dates.append(unix_time_millis(temp_read[i]))
                         temp_read = dates
                     if (i==4 or i==5 or i==6 or i==7):
