@@ -1,12 +1,12 @@
 import os
 import pyarrow as pa
 from pyarrow import csv
-from dataset import dataset
+from TPCDATASET.dataset import Dataset
 
 # TPCH
 
 
-class line_item(dataset):
+class lineitem(Dataset):
 
     def __init__(self, columns=None, row_size=None, c_prefix=None, metadata_information=None, field_metadata=None, metadata_indexes=None, convert_to_fixed=False, convert_date_to_int=False, custom_date_encoding=False):
         if metadata_information == None:

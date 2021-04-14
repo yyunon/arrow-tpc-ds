@@ -1,10 +1,10 @@
 import os
 import pyarrow as pa
 from pyarrow import csv
-from dataset import dataset
+from TPCDATASET.dataset import Dataset
 
 
-class store_sales(dataset):
+class store_sales(Dataset):
 
     def __init__(self, columns=None, row_size=None, c_prefix=None, metadata_information=None, field_metadata=None, metadata_indexes=None):
         if metadata_information == None:
@@ -121,7 +121,7 @@ class store_sales(dataset):
         print(f"Column: {column}, Row:{self.data[column]} ")
 
 
-class store(dataset):
+class store(Dataset):
 
     def __init__(self, columns=None, row_size=None, c_prefix=None, metadata_information=None, field_metadata=None, metadata_indexes=None):
         if metadata_information == None:
@@ -251,7 +251,7 @@ class store(dataset):
         print(f"Column: {column}, Row:{self.data[column]} ")
 
 
-class date_dim(dataset):
+class date_dim(Dataset):
 
     def __init__(self, columns=None, row_size=None, c_prefix=None, metadata_information=None, field_metadata=None, metadata_indexes=None):
         if metadata_information == None:
@@ -383,7 +383,7 @@ class date_dim(dataset):
         print(f"Column: {column}, Row:{self.data[column]} ")
 
 
-class customer_address(dataset):
+class customer_address(Dataset):
 
     def __init__(self, columns=None, row_size=None, c_prefix=None, metadata_information=None, field_metadata=None, metadata_indexes=None):
         if metadata_information == None:
@@ -482,7 +482,7 @@ class customer_address(dataset):
         print(f"Column: {column}, Row:{self.data[column]} ")
 
 
-class customer_demographics(dataset):
+class customer_demographics(Dataset):
 
     def __init__(self, columns=None, row_size=None, c_prefix=None, metadata_information=None, field_metadata=None, metadata_indexes=None):
         # TODO implement metadata indexes

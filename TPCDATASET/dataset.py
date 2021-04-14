@@ -5,7 +5,7 @@ from pyarrow import csv
 # This model will hold the dataset and schema information.
 
 
-class dataset:
+class Dataset:
     def __init__(self, c_prefix=None, metadata_information=None):
         # TODO Add many of the vars and logic in datasets to here
         self.database_name = None
