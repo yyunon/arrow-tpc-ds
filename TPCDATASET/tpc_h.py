@@ -148,6 +148,8 @@ class lineitem(Dataset):
 
         # Close the writer.
         self.writer.close()
+        print(
+            f"Recordbatch created... {self.dir_name}/{self.recordbatch_name}/{self.recordbatch_name}.....")
 
     def print_col(self, column):
         assert(self.data != None)
