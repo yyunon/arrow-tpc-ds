@@ -40,7 +40,7 @@ class lineitem(Dataset):
             'l_quantity': pa.field('quantity', pa.float64(), nullable=False),
             'l_extendedprice': pa.field('extendedprice', pa.float64(), nullable=False),
             'l_discount': pa.field('discount', pa.float64(), nullable=False),
-            'l_tax': pa.field('tax', pa.int64(), nullable=False),
+            'l_tax': pa.field('tax', pa.float64(), nullable=False),
             'l_returnflag': pa.field('returnflag', pa.utf8(), nullable=False),
             'l_linestatus': pa.field('linestatus', pa.utf8(), nullable=False),
             'l_shipdate': pa.field('shipdate', pa.date32(), nullable=False),

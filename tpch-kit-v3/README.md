@@ -1,1 +1,0 @@
-#TPCH-KIT v3
