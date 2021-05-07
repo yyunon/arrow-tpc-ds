@@ -11,6 +11,7 @@ def dbgen():
 
 class ImportModules:
     def __init__(self, module):
+        print("This module is still WIP...")
         self.so = None
         if module == "tpch":
             self.so = "/usr/local/lib/dbgen.so"
