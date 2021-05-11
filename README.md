@@ -5,3 +5,10 @@ pip3 install .
 ## Use
 Check /test folder
 
+##Support
+This project is still WIP, so it does not really suppport all of the tables. The implementations are pretty straight-forward.
+
+###TPC-H
+Lineitem 
+###TPC-DS
+Storesales,store,date_dim, customer_demographics, customer_address
