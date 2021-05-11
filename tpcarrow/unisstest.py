@@ -1,4 +1,4 @@
-from TPCDATASET import *
+from tpcarrow import *
 
 field_metadata = {b'fletcher_epc' : b'20'}
 

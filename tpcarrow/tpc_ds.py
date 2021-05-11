@@ -1,7 +1,7 @@
 import os
 import pyarrow as pa
 from pyarrow import csv
-from TPCDATASET.dataset import Dataset
+from tpcarrow.dataset import Dataset
 
 
 class store_sales(Dataset):
